@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "929434131247",
+    "project_id": "asmaa-cadeau-app",
+    "storage_bucket": "asmaa-cadeau-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:929434131247:android:ba6263d2a4578e28799fda",
+        "android_client_info": {
+          "package_name": "com.example.asmaa_demo_cadeau"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "929434131247-0b00dpt0cb32hrppis5i4lfjje5qdq75.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBfcvhLMmnNpBRuN457gJzTKGqXYj0NK8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "929434131247-0b00dpt0cb32hrppis5i4lfjje5qdq75.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "929434131247-5jda0rgg5nit176ir2vi2n2u0p5obo4m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.asmaaDemoCadeau"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
