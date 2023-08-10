@@ -23,7 +23,7 @@ class AccountScreen extends StatelessWidget {
         title: SizedBox(
             height: 100,
             child: Image.asset(
-              "assets/images/Group 5.png",
+              "assets/images/group_5.png",
               fit: BoxFit.fill,
             )),
       ),
@@ -60,7 +60,7 @@ class AccountScreen extends StatelessWidget {
                   children: [
                     ImageIcon(
                       const AssetImage(
-                        "assets/images/..png",
+                        "assets/images/logout_icon.png",
                       ),
                       size: kScreenHeight * 0.1,
                       color: kBlack,

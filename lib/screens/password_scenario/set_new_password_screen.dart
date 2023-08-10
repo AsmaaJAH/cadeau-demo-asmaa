@@ -10,20 +10,19 @@ import 'package:asmaa_demo_cadeau/functions/get_device_info.dart';
 import 'package:asmaa_demo_cadeau/functions/show_dialog.dart';
 import 'package:asmaa_demo_cadeau/provider/bonus_task_provider.dart';
 import 'package:asmaa_demo_cadeau/provider/fill_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/passward_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/reset_scenario_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/password_form_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/password_scenario_provider.dart';
 import 'package:asmaa_demo_cadeau/screens/login.dart';
-import 'package:asmaa_demo_cadeau/screens/password_scenario/verify_code_scr.dart';
+import 'package:asmaa_demo_cadeau/screens/password_scenario/verification_code_screen.dart';
 import 'package:asmaa_demo_cadeau/widgets/customized_text_widget.dart';
 import 'package:asmaa_demo_cadeau/widgets/pass_scenario/page_begining_interface.dart';
 import 'package:asmaa_demo_cadeau/widgets/flat_button.dart';
-import 'package:asmaa_demo_cadeau/widgets/pass_scenario/pass_checker.dart';
+import 'package:asmaa_demo_cadeau/widgets/pass_scenario/password_checker_element.dart';
 import 'package:asmaa_demo_cadeau/widgets/sub_forms/password_form.dart';
 
 class SetNewPasswardScreen extends StatefulWidget {
   const SetNewPasswardScreen({super.key, required this.resendCode});
-  final void Function(
-      {required bool isResendCode, required BuildContext context}) resendCode;
+  final void Function({required BuildContext context}) resendCode;
 
   @override
   State<SetNewPasswardScreen> createState() => _SetNewPasswardScreenState();
@@ -31,17 +30,26 @@ class SetNewPasswardScreen extends StatefulWidget {
 
 class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
   final _formKey = GlobalKey<FormState>();
-  var lengthChecker = false;
-  var contentChecker = false;
   var isSending = false;
-  var isFilling = false;
+  late FillingState fillingState;
+  late BonusCheckerState bonusState;
+
+  late ResetScenarioState resetScenarioState;
+  late EnteredPasswordState enteredPasswordState;
+
+  @override
+  void initState() {
+    super.initState();
+    fillingState = context.read<FillingState>();
+    resetScenarioState = context.read<ResetScenarioState>();
+    enteredPasswordState = context.read<EnteredPasswordState>();
+    bonusState = context.read<BonusCheckerState>();
+
+  }
 
   void _submit() async {
     determineLanguage();
-    var fillingState = context.read<FillingState>();
 
-    var resetScenarioState = context.read<ResetScenarioState>();
-    var enteredPasswordState = context.read<EnteredPasswordState>();
     var resetedPhone = resetScenarioState.resetedPhone;
     var resetedCountryCode = resetScenarioState.resetedCountryCode;
     var enteredPassward = enteredPasswordState.enteredPassword;
@@ -88,19 +96,15 @@ class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
         final Map<String, dynamic> resultData = json.decode(response.body);
 
         //reset the form or make it empty again
+        resetScenarioState.updateResetedCountryCode("+20");
+        resetScenarioState.updateResetedPhone("");
+        enteredPasswordState.updateConfirmedPassword("");
+        enteredPasswordState.updateEnteredPassword("");
+        fillingState.updateBoolFilledPassword(false);
+        fillingState.updateBoolFilledConfirmationPassword(false);
+        fillingState.updateBoolisFillingSetNewPass();
+        enteredPasswordState.updateBoolAuthenticating(false);
         setState(() {
-          resetScenarioState.updateResetedCountryCode("+20");
-          resetScenarioState.updateResetedPhone("");
-          enteredPasswordState.updateConfirmedPassword("");
-          enteredPasswordState.updateEnteredPassword("");
-
-          fillingState.updateBoolFilledPassword(false);
-          fillingState.updateBoolFilledConfirmationPassword(false);
-
-          enteredPasswordState.updateBoolAuthenticating(false);
-          isSending = false;
-
-          isFilling = false;
           _formKey.currentState!.reset();
         });
         // ignore: use_build_context_synchronously
@@ -132,19 +136,18 @@ class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
         );
 
         // reset---->  to be empty again
-        setState(() {
-          resetScenarioState.updateResetedPhone("");
+        resetScenarioState.updateResetedPhone("");
 
-          resetScenarioState.updateResetedCountryCode("+20");
-          enteredPasswordState.updateEnteredPassword("");
+        resetScenarioState.updateResetedCountryCode("+20");
+        enteredPasswordState.updateEnteredPassword("");
 
-          enteredPasswordState.updateConfirmedPassword("");
+        enteredPasswordState.updateConfirmedPassword("");
+        fillingState.updateBoolisFillingSetNewPass();
 
-          //delete instead of unallocate space from the user device memory
-          resetScenarioState.updateResetedToken("");
-          isSending = false;
-          isFilling = false;
-        });
+        //delete instead of unallocate space from the user device memory
+        resetScenarioState.updateResetedToken("");
+
+        enteredPasswordState.updateBoolAuthenticating(false);
       } else {
         // ignore: use_build_context_synchronously
         if (!context.mounted) {
@@ -160,9 +163,7 @@ class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
         debugPrint('failed');
         debugPrint(response.statusCode.toString());
         debugPrint(response.body);
-        setState(() {
-          isSending = false;
-        });
+        enteredPasswordState.updateBoolAuthenticating(false);
       }
     } catch (error) {
       debugPrint(error.toString());
@@ -172,9 +173,7 @@ class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
           content: Text('Setting New password failed: $error'),
         ),
       );
-      setState(() {
-        isSending = false;
-      });
+      enteredPasswordState.updateBoolAuthenticating(false);
     }
   }
 
@@ -183,39 +182,26 @@ class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
       _formKey.currentState!.save();
 
       // update is to show circle progress during fetching data from API requestes
-      setState(() {
-        isSending = true;
-      });
+      enteredPasswordState.updateBoolAuthenticating(true);
 
       _submit();
-
-      isSending = false;
+      enteredPasswordState.updateBoolAuthenticating(false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    var fillingState = context.read<FillingState>();
-    var bonusCheckerState = context.watch<BonusCheckerState>();
+    //fillingState.updateBoolisFillingSetNewPass();
 
-    isFilling = fillingState.isfilledPassword &&
-        fillingState.isfilledConfirmtionPassword;
-    setState(() {
-      lengthChecker = bonusCheckerState.isLengthChecked;
-      contentChecker = bonusCheckerState.isContentChecked;
-    });
     void onPressIcon() {
-      var bonusState = context.read<BonusCheckerState>();
+      fillingState.updateBoolFilledPassword(false);
 
-      setState(() {
-        fillingState.updateBoolFilledPassword(false);
+      fillingState.updateBoolFilledConfirmationPassword(false);
+      fillingState.updateBoolisFillingSetNewPass();
 
-        fillingState.updateBoolFilledConfirmationPassword(false);
-        isFilling = false;
-        //reset the bonus Flags:
-        bonusState.updateBoolContentChecked(false);
-        bonusState.updateBoolLengthChecked(false);
-      });
+      //reset the bonus Flags:
+      bonusState.updateBoolContentChecked(false);
+      bonusState.updateBoolLengthChecked(false);
 
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => VerificationCodeScreen(
@@ -244,8 +230,8 @@ class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
               width: kScreenWidth * .8,
               child: const Stack(
                 children: [
-                  BeginigInterfaceWidget(
-                      image: 'Group.png', pageTitle: 'Set New Password'),
+                  PageBeginingInterfaceWidget(
+                      image: 'group.png', pageTitle: 'Set New Password'),
                 ],
               ),
             ),
@@ -260,63 +246,85 @@ class _SetNewPasswardScreenState extends State<SetNewPasswardScreen> {
                   padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                   child: Form(
                     key: _formKey,
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const PasswordForm(
-                            isSettingNewPass: true,
-                            label: 'New Password',
-                            hint: 'Enter at least 8 characters',
-                            isConfirmingPassword: false,
-                          ),
-                          SizedBox(
-                            height: kScreenHeight * 0.019,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Selector<EnteredPasswordState, bool>(
+                        selector: (_, provider) => provider.isAuthenticating,
+                        builder: (context, isSending, child) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              const CustomizedTextWidget(
-                                  textAlign: TextAlign.center,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15,
-                                  data: 'Your password Must have :',
-                                  color: kBlack),
-                              SizedBox(
-                                height: kScreenHeight * 0.01,
-                              ),
-                              PassValidatorElement(
-                                validator: '8 to 20 Characters',
-                                checked: lengthChecker,
+                              const PasswordForm(
+                                isSettingNewPass: true,
+                                label: 'New Password',
+                                hint: 'Enter at least 8 characters',
+                                isConfirmingPassword: false,
                               ),
                               SizedBox(
-                                height: kScreenHeight * 0.01,
+                                height: kScreenHeight * 0.019,
                               ),
-                              PassValidatorElement(
-                                validator:
-                                    'Letters , numbers and special characters',
-                                checked: contentChecker,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const CustomizedTextWidget(
+                                      textAlign: TextAlign.center,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
+                                      data: 'Your password Must have :',
+                                      color: kBlack),
+                                  SizedBox(
+                                    height: kScreenHeight * 0.01,
+                                  ),
+                                  Selector<BonusCheckerState, bool>(
+                                      selector: (_, provider) =>
+                                          provider.isLengthChecked,
+                                      builder: (context, lengthChecker, child) {
+                                        return PasswordCheckerElement(
+                                          validator: '8 to 20 Characters',
+                                          checked: lengthChecker,
+                                        );
+                                      }),
+                                  SizedBox(
+                                    height: kScreenHeight * 0.01,
+                                  ),
+                                  Selector<BonusCheckerState, bool>(
+                                    selector: (_, provider) =>
+                                        provider.isContentChecked,
+                                    builder: (context, contentChecker, child) {
+                                      return PasswordCheckerElement(
+                                        validator:
+                                            'Letters , numbers and special characters',
+                                        checked: contentChecker,
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
+                              const PasswordForm(
+                                isSettingNewPass: true,
+                                label: 'New Password',
+                                hint: 'Enter at least 8 characters',
+                                isConfirmingPassword: true,
+                              ),
+                              const SizedBox(height: 38),
+                              if (isSending)
+                                const SizedBox(
+                                    height: 5,
+                                    child: CircularProgressIndicator()),
+                              if (!isSending)
+                                Selector<FillingState, bool>(
+                                  selector: (_, provider) => provider.isFillingSetNewPass,
+                                  builder: (context, isFilling, child) {
+                                    return FlatButton(
+                                      condition: isFilling,
+                                      onPressedFunction: _onPressFlatButton,
+                                      deactivedData: 'Next',
+                                      activatedData: 'Done',
+                                    );
+                                  },
+                                ),
                             ],
-                          ),
-                          const PasswordForm(
-                            isSettingNewPass: true,
-                            label: 'New Password',
-                            hint: 'Enter at least 8 characters',
-                            isConfirmingPassword: true,
-                          ),
-                          const SizedBox(height: 38),
-                          if (isSending)
-                            const SizedBox(
-                                height: 5, child: CircularProgressIndicator()),
-                          if (!isSending)
-                            FlatButton(
-                              condition: isFilling,
-                              onPressedFunction: _onPressFlatButton,
-                              deactivedData: 'Next',
-                              activatedData: 'Done',
-                            ),
-                        ]),
+                          );
+                        }),
                   ),
                 ),
               ),

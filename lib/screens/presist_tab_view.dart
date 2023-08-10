@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
-import 'package:asmaa_demo_cadeau/screens/inside_app_screens/occasions_list.dart';
+import 'package:asmaa_demo_cadeau/screens/inside_app_screens/occasions_list_screen.dart';
 import 'package:asmaa_demo_cadeau/screens/inside_app_screens/account_screen.dart';
 
 PersistentTabController kController = PersistentTabController(initialIndex: 0);

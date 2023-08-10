@@ -1,12 +1,12 @@
 import 'package:asmaa_demo_cadeau/functions/animate_logout.dart';
-import 'package:asmaa_demo_cadeau/models/shared_prefrences.dart';
+import 'package:asmaa_demo_cadeau/models/shared_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 import 'package:asmaa_demo_cadeau/functions/get_device_info.dart';
 import 'package:asmaa_demo_cadeau/constants/global_api_variables.dart';
-import 'package:asmaa_demo_cadeau/provider/login_token.dart';
+import 'package:asmaa_demo_cadeau/provider/login_provider.dart';
 
 void logout({required BuildContext context}) async {
   var loginTokenState = context.read<LoginTokenState>();

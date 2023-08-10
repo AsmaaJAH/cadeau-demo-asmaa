@@ -2,8 +2,8 @@ import 'package:asmaa_demo_cadeau/constants/colors.dart';
 import 'package:asmaa_demo_cadeau/constants/screen_dimensions.dart';
 import 'package:flutter/material.dart';
 
-class BeginigInterfaceWidget extends StatelessWidget {
-  const BeginigInterfaceWidget(
+class PageBeginingInterfaceWidget extends StatelessWidget {
+  const PageBeginingInterfaceWidget(
       {super.key, required this.image, required this.pageTitle});
   final String image;
   final String pageTitle;

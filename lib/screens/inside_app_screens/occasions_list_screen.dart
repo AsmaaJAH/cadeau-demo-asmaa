@@ -25,15 +25,15 @@ class _OccasionsListScreenState extends State<OccasionsListScreen> {
       PagingController(firstPageKey: 0);
 
   void _onPress() {
-    if (counter == 0) {
-      setState(() {
-        counter = 3;
-      });
-    } else if (counter != 0) {
-      setState(() {
-        counter = 0;
-      });
-    }
+    // if (counter == 0) {
+    //   setState(() {
+    //     counter = 3;
+    //   });
+    // } else if (counter != 0) {
+    //   setState(() {
+    //     counter = 0;
+    //   });
+    // }
   }
 
   @override
@@ -75,7 +75,7 @@ class _OccasionsListScreenState extends State<OccasionsListScreen> {
     kOccassionConstContent = PagedListView<int, dynamic>(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<dynamic>(
-        itemBuilder: (context, item, index) => SingleOcassionCard(
+        itemBuilder: (context, item, index) => OcassionCard(
           item: item,
         ),
       ),

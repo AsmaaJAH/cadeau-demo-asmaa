@@ -72,7 +72,7 @@ class _SingleOccasionProductsListScreenState
             label: Row(
               children: [
                 InkWell(
-                  child: Image.asset("assets/images/Group 2.png"),
+                  child: Image.asset("assets/images/group_2.png"),
                 ),
                 const SizedBox(
                   width: 5,
@@ -128,7 +128,7 @@ class _SingleOccasionProductsListScreenState
           SizedBox(
             width: kScreenWidth,
             height: kScreenHeight * 0.15,
-            child: Image.asset("assets/images/Group 13.png"
+            child: Image.asset("assets/images/group_13.png"
                 //fit: BoxFit.cover,
                 ),
           ),
@@ -142,7 +142,7 @@ class _SingleOccasionProductsListScreenState
                 crossAxisCount: 2,
               ),
               builderDelegate: PagedChildBuilderDelegate<dynamic>(
-                itemBuilder: (context, item, index) => SingleProductCard(
+                itemBuilder: (context, item, index) => ProductCard(
                   productItem: item,
                 ),
               ),

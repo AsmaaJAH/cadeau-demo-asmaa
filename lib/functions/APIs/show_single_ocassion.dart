@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
-import 'package:asmaa_demo_cadeau/provider/ocassions_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/occasions_list_provider.dart';
 import 'package:asmaa_demo_cadeau/constants/global_api_variables.dart';
-import 'package:asmaa_demo_cadeau/models/ocassions.dart';
-import 'package:asmaa_demo_cadeau/provider/login_token.dart';
+import 'package:asmaa_demo_cadeau/models/ccassionlist_responsebody.dart';
+import 'package:asmaa_demo_cadeau/provider/login_provider.dart';
 
 List<dynamic> newProducts = [];
 

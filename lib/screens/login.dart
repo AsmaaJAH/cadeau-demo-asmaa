@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:asmaa_demo_cadeau/constants/colors.dart';
-import 'package:asmaa_demo_cadeau/models/shared_prefrences.dart';
+import 'package:asmaa_demo_cadeau/models/shared_pref.dart';
 import 'package:asmaa_demo_cadeau/widgets/customized_text_widget.dart';
 import 'package:http/http.dart';
 import 'package:flutter/material.dart';
@@ -8,14 +8,14 @@ import 'package:provider/provider.dart';
 
 import 'package:asmaa_demo_cadeau/constants/screen_dimensions.dart';
 import 'package:asmaa_demo_cadeau/constants/global_api_variables.dart';
-import 'package:asmaa_demo_cadeau/provider/login_token.dart';
+import 'package:asmaa_demo_cadeau/provider/login_provider.dart';
 import 'package:asmaa_demo_cadeau/screens/presist_tab_view.dart';
 import 'package:asmaa_demo_cadeau/functions/get_device_info.dart';
 import 'package:asmaa_demo_cadeau/functions/show_dialog.dart';
 import 'package:asmaa_demo_cadeau/provider/fill_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/passward_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/phone_provider.dart';
-import 'package:asmaa_demo_cadeau/screens/password_scenario/forget_pass_scr.dart';
+import 'package:asmaa_demo_cadeau/provider/password_form_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/phone_form_provider.dart';
+import 'package:asmaa_demo_cadeau/screens/password_scenario/forget_password_screen.dart';
 import 'package:asmaa_demo_cadeau/widgets/flat_button.dart';
 import 'package:asmaa_demo_cadeau/widgets/sub_forms/password_form.dart';
 import 'package:asmaa_demo_cadeau/widgets/sub_forms/phone_form.dart';
@@ -31,16 +31,22 @@ class LogInScreen extends StatefulWidget {
 
 class _LogInScreenState extends State<LogInScreen> {
   final _formKey = GlobalKey<FormState>();
-  var isfilledPhone = false;
-  var isfilledPassward = false;
-  var isFilling = false;
-  var isAuthenticating = false;
+  late EnteredPhoneState phoneState;
+  late FillingState fillState;
+  late LoginTokenState tokenState;
+  late bool isFilling;
 
-  void _submit() async {
+  @override
+  void initState() {
+    super.initState();
+    fillState = context.read<FillingState>();
+    phoneState = context.read<EnteredPhoneState>();
+    tokenState = context.read<LoginTokenState>();
+  }
+
+  void _submit(EnteredPasswordState passState) async {
     determineLanguage();
-    var passState = context.read<EnteredPasswordState>();
-    var phoneState = context.read<EnteredPhoneState>();
-    var fillState = context.read<FillingState>();
+
     var enteredPassward = passState.enteredPassword;
     var enteredCountryCode = phoneState.enteredCountryCode;
     var enteredPhone = phoneState.enteredPhone;
@@ -86,25 +92,21 @@ class _LogInScreenState extends State<LogInScreen> {
           return;
         }
 
-        context
-            .read<LoginTokenState>()
+        tokenState
             .updateLoginToken(resultData['data']['extra']['access_token']);
         await SharedPref.setString(resultData['data']['extra']['access_token']);
         await SharedPref.setTrueBool();
 
         //reset the form or make it empty again
-        setState(() {
-          passState.updateEnteredPassword("");
-          phoneState.updateCountryCode("+20");
-          phoneState.updateEnteredPhone("");
+        passState.updateEnteredPassword("");
+        phoneState.updateCountryCode("+20");
+        phoneState.updateEnteredPhone("");
 
-          fillState.updateBoolFilledPhone(false);
-          fillState.updateBoolFilledPassword(false);
-          passState.updateBoolAuthenticating(false);
-          isAuthenticating = false;
-          isfilledPhone = false;
-          isfilledPassward = false;
-          isFilling = isfilledPassward && isfilledPhone;
+        fillState.updateBoolFilledPhone(false);
+        fillState.updateBoolFilledPassword(false);
+        fillState.updateBoolisFillingLogIn();
+        passState.updateBoolAuthenticating(false);
+        setState(() {
           _formKey.currentState!.reset();
         });
         // ignore: use_build_context_synchronously
@@ -130,10 +132,7 @@ class _LogInScreenState extends State<LogInScreen> {
         debugPrint('failed');
         debugPrint(response.statusCode.toString());
         debugPrint(response.body);
-        setState(() {
-          passState.updateBoolAuthenticating(false);
-          isAuthenticating = false;
-        });
+        passState.updateBoolAuthenticating(false);
       }
     } catch (error) {
       debugPrint(error.toString());
@@ -143,31 +142,20 @@ class _LogInScreenState extends State<LogInScreen> {
           content: Text('Authentication failed.$error'),
         ),
       );
-      setState(() {
-        passState.updateBoolAuthenticating(false);
-        isAuthenticating = false;
-      });
+      passState.updateBoolAuthenticating(false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    var passState = context.read<EnteredPasswordState>();
-    var phoneState = context.read<EnteredPhoneState>();
-    var fillState = context.read<FillingState>();
-    isAuthenticating = passState.isAuthenticating;
-    isfilledPhone = context.watch<FillingState>().isfilledPhone;
-    isfilledPassward = context.watch<FillingState>().isfilledPassword;
-    isFilling = isfilledPassward && isfilledPhone;
+    var passState = context.watch<EnteredPasswordState>();
     void onPressFlatButton() {
       if (_formKey.currentState!.validate()) {
         _formKey.currentState!.save();
 
         // update isAuthintication to show circle progress during fetching data from API requestes
-        setState(() {
-          passState.updateBoolAuthenticating(true);
-        });
-        _submit();
+        passState.updateBoolAuthenticating(true);
+        _submit(passState);
       }
     }
 
@@ -196,7 +184,7 @@ class _LogInScreenState extends State<LogInScreen> {
                     left: kScreenWidth * 0.085,
                     height: kScreenHeight * 0.1,
                     width: kScreenWidth * 0.37,
-                    child: Image.asset('assets/images/Group 15 10 log in.png'),
+                    child: Image.asset('assets/images/group_15_10_login.png'),
                   ),
                   Positioned(
                     top: kScreenHeight * 0.16,
@@ -224,83 +212,94 @@ class _LogInScreenState extends State<LogInScreen> {
             const SizedBox(
               height: 15,
             ),
-            Container(
-              margin: const EdgeInsets.all(20),
-              color: const Color.fromARGB(250, 250, 250, 250),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const PhoneForm(
-                      hint: "0124145891",
-                    ),
-                    const PasswordForm(
-                      isSettingNewPass: false,
-                      label: 'Password',
-                      hint: 'Enter your password here',
-                      isConfirmingPassword: false,
-                    ),
-                    const SizedBox(height: 38),
-                    if (isAuthenticating)
-                      const SizedBox(
-                          height: 5, child: CircularProgressIndicator()),
-                    if (!isAuthenticating)
-                      FlatButton(
-                        condition: isFilling,
-                        onPressedFunction: () {
-                          onPressFlatButton();
-                        },
-                        activatedData: 'Log In',
-                        deactivedData: 'Log In',
-                      ),
-                    if (isAuthenticating)
-                      const SizedBox(
-                          height: 5, child: CircularProgressIndicator()),
-                    if (!isAuthenticating)
-                      TextButton(
-                        onPressed: () {},
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+            Selector<EnteredPasswordState, bool>(
+                selector: (_, provider) => provider.isAuthenticating,
+                builder: (context, isAuthenticating, child) {
+                  return Container(
+                    margin: const EdgeInsets.all(20),
+                    color: const Color.fromARGB(250, 250, 250, 250),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Form(
+                        key: _formKey,
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                          const PhoneForm(
+                            hint: "0124145891",
+                          ),
+                          const PasswordForm(
+                            isSettingNewPass: false,
+                            label: 'Password',
+                            hint: 'Enter your password here',
+                            isConfirmingPassword: false,
+                          ),
+                          const SizedBox(height: 38),
+                          if (isAuthenticating)
+                            const SizedBox(
+                                height: 5, child: CircularProgressIndicator()),
+                          if (!isAuthenticating)
+                            Selector<FillingState, bool>(
+                                selector: (_, provider) =>
+                                    provider.isFillingLogIn,
+                                builder: (context, isFilling, child) {
+                                  return FlatButton(
+                                    condition: isFilling,
+                                    onPressedFunction: () {
+                                      onPressFlatButton();
+                                    },
+                                    activatedData: 'Log In',
+                                    deactivedData: 'Log In',
+                                  );
+                                }),
+                          if (isAuthenticating)
+                            const SizedBox(
+                                height: 5, child: CircularProgressIndicator()),
+                          if (!isAuthenticating)
                             TextButton(
-                              onPressed: () {
-                                //empty current form and navigate to forget pass screen
-                                setState(() {
-                                  passState.updateEnteredPassword("");
-                                  phoneState.updateCountryCode("+20");
-                                  phoneState.updateEnteredPhone("");
+                              onPressed: () {},
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      //empty current form and navigate to forget pass screen
+                                      passState.updateEnteredPassword("");
+                                      phoneState.updateCountryCode("+20");
+                                      phoneState.updateEnteredPhone("");
 
-                                  fillState.updateBoolFilledPhone(false);
-                                  fillState.updateBoolFilledPassword(false);
-
-                                  _formKey.currentState!.reset();
-                                });
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ForgetPasswardScreen(),
+                                      fillState
+                                          .updateBoolFilledPhone(false);
+                                      fillState
+                                          .updateBoolFilledPassword(false);
+                                      setState(() {
+                                        _formKey.currentState!.reset();
+                                      });
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const ForgetPasswordScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text(
+                                      'Forget password ?',
+                                      textAlign: TextAlign.left,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Forget password ?',
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                        ]),
                       ),
-                  ]),
-                ),
-              ),
-            ),
+                    ),
+                  );
+                }),
           ],
         ),
       ),

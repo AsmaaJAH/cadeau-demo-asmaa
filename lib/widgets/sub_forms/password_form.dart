@@ -1,7 +1,7 @@
 import 'package:asmaa_demo_cadeau/functions/bonus_content_checker.dart';
 import 'package:asmaa_demo_cadeau/provider/bonus_task_provider.dart';
 import 'package:asmaa_demo_cadeau/provider/fill_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/passward_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/password_form_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -28,6 +28,17 @@ class _PasswordFormState extends State<PasswordForm> {
   var _obscurePassword = true;
   var _isContentChecked = false;
   var _isLengthChecked = false;
+  late EnteredPasswordState passState;
+  late BonusCheckerState bonusState;
+  late FillingState fillState;
+
+  @override
+  void initState() {
+    super.initState();
+    passState = context.read<EnteredPasswordState>();
+    bonusState = context.read<BonusCheckerState>();
+    fillState = context.read<FillingState>();
+  }
 
   void _toggle() {
     setState(() {
@@ -36,8 +47,6 @@ class _PasswordFormState extends State<PasswordForm> {
   }
 
   void _onSave(String? value) {
-    var passState = context.read<EnteredPasswordState>();
-    var bonusState = context.read<BonusCheckerState>();
     if (widget.isConfirmingPassword) {
       passState.updateConfirmedPassword(value!);
     } else {
@@ -49,8 +58,6 @@ class _PasswordFormState extends State<PasswordForm> {
   }
 
   void _onChange(String value) {
-    var bonusState = context.read<BonusCheckerState>();
-    var fillState = context.read<FillingState>();
     if (!widget.isConfirmingPassword && widget.isSettingNewPass) {
       //------------------- is checked: ( the bonus task) ----------------------
 
@@ -75,51 +82,55 @@ class _PasswordFormState extends State<PasswordForm> {
     if (value.trim().isNotEmpty) {
       if (!widget.isConfirmingPassword) {
         fillState.updateBoolFilledPassword(true);
+        fillState.updateBoolisFillingLogIn();
       } else {
         fillState.updateBoolFilledConfirmationPassword(true);
+        fillState.updateBoolisFillingSetNewPass();
       }
     } else {
       if (!widget.isConfirmingPassword) {
         fillState.updateBoolFilledPassword(false);
+        fillState.updateBoolisFillingLogIn();
       } else {
         fillState.updateBoolFilledConfirmationPassword(false);
+        fillState.updateBoolisFillingSetNewPass();
       }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    String? onValidate(String? value) {
-      _isContentChecked = context.read<BonusCheckerState>().isContentChecked;
-      _isLengthChecked = context.read<BonusCheckerState>().isContentChecked;
-      if (!widget.isConfirmingPassword &&
-          (value == null ||
-              value.trim().length < 8 ||
-              value.trim().length > 20 ||
-              (widget.isSettingNewPass &&
-                  (!_isContentChecked || !_isLengthChecked)))) {
-        return 'Passward must be vaild with at least 8 chars long.';
-      } else if (!widget.isConfirmingPassword &&
-          widget.isSettingNewPass &&
-          value != null &&
-          value.trim().length >= 8 &&
-          value.trim().length <= 20 &&
-          _isContentChecked &&
-          _isLengthChecked) {
-        context.read<EnteredPasswordState>().updateEnteredPassword(value);
-      }
-
-      //-------------------- my Bonus validator to hundle a very specific case (hide confirm pass validotar if user clicked done without kept restricted to the bonus validators)-----------------------------------
-
-      if (widget.isConfirmingPassword &&
-          widget.isSettingNewPass &&
-          (value != context.read<EnteredPasswordState>().enteredPassword)) {
-        return 'Confirm-passward must match your above password.';
-      }
-
-      return null;
+  String? onValidate(String? value) {
+    _isContentChecked = bonusState.isContentChecked;
+    _isLengthChecked = bonusState.isContentChecked;
+    if (!widget.isConfirmingPassword &&
+        (value == null ||
+            value.trim().length < 8 ||
+            value.trim().length > 20 ||
+            (widget.isSettingNewPass &&
+                (!_isContentChecked || !_isLengthChecked)))) {
+      return 'Passward must be vaild with at least 8 chars long.';
+    } else if (!widget.isConfirmingPassword &&
+        widget.isSettingNewPass &&
+        value != null &&
+        value.trim().length >= 8 &&
+        value.trim().length <= 20 &&
+        _isContentChecked &&
+        _isLengthChecked) {
+      passState.updateEnteredPassword(value);
     }
 
+    //-------------------- my Bonus validator to hundle a very specific case (hide confirm pass validotar if user clicked done without kept restricted to the bonus validators)-----------------------------------
+
+    if (widget.isConfirmingPassword &&
+        widget.isSettingNewPass &&
+        (value != passState.enteredPassword)) {
+      return 'Confirm-passward must match your above password.';
+    }
+
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return TextFormField(
       decoration: InputDecoration(
         labelText: widget.label,

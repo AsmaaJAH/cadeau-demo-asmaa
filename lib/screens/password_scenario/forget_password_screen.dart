@@ -8,34 +8,38 @@ import 'package:asmaa_demo_cadeau/constants/global_api_variables.dart';
 import 'package:asmaa_demo_cadeau/functions/get_device_info.dart';
 import 'package:asmaa_demo_cadeau/functions/show_dialog.dart';
 import 'package:asmaa_demo_cadeau/provider/fill_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/phone_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/reset_scenario_provider.dart';
-import 'package:asmaa_demo_cadeau/screens/password_scenario/verify_code_scr.dart';
+import 'package:asmaa_demo_cadeau/provider/phone_form_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/password_scenario_provider.dart';
+import 'package:asmaa_demo_cadeau/screens/password_scenario/verification_code_screen.dart';
 import 'package:asmaa_demo_cadeau/widgets/pass_scenario/page_begining_interface.dart';
 import 'package:asmaa_demo_cadeau/widgets/flat_button.dart';
 import 'package:asmaa_demo_cadeau/widgets/sub_forms/phone_form.dart';
 import 'package:asmaa_demo_cadeau/constants/screen_dimensions.dart';
 import 'package:asmaa_demo_cadeau/screens/login.dart';
 
-class ForgetPasswardScreen extends StatefulWidget {
-  const ForgetPasswardScreen({super.key});
+class ForgetPasswordScreen extends StatefulWidget {
+  const ForgetPasswordScreen({super.key});
 
   @override
-  State<ForgetPasswardScreen> createState() => _ForgetPasswardScreenState();
+  State<ForgetPasswordScreen> createState() => _ForgetPasswordScreenState();
 }
 
-class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
+class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  var isSending = false;
-  var isFilling = false;
+  late FillingState fillingState;
+  late EnteredPhoneState enteredPhoneState;
+  late ResetScenarioState resetScenarioState;
+
+  @override
+  void initState() {
+    super.initState();
+    fillingState = context.read<FillingState>();
+    enteredPhoneState = context.read<EnteredPhoneState>();
+    resetScenarioState = context.read<ResetScenarioState>();
+  }
 
   void _onPressIcon(BuildContext context) {
-    var fillingState = context.read<FillingState>();
-
-    setState(() {
-      fillingState.updateBoolFilledPhone(false);
-      isFilling = fillingState.isfilledPhone;
-    });
+    fillingState.updateBoolFilledPhone(false);
 
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => const LogInScreen()));
@@ -46,24 +50,17 @@ class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
       _formKey.currentState!.save();
 
       // update is to show circle progress during fetching data from API requestes
-      setState(() {
-        enteredPhoneState.updateBoolSending(true);
-      });
+      enteredPhoneState.updateBoolSending(true);
 
-      _submit(
-          isResendCode: context.read<ResetScenarioState>().isResendCode,
-          context: context);
+      _submit(context: context);
+      enteredPhoneState.updateBoolSending(false);
     }
   }
 
-  void _submit(
-      {required bool isResendCode, required BuildContext context}) async {
-    var fillingState = context.read<FillingState>();
-    var resetScenarioState = context.read<ResetScenarioState>();
-    var enteredPhoneState = context.read<EnteredPhoneState>();
+  void _submit({required BuildContext context}) async {
     var enteredCountryCode = enteredPhoneState.enteredCountryCode;
     var enteredPhone = enteredPhoneState.enteredPhone;
-    if (isResendCode) {
+    if (resetScenarioState.isResendCode) {
       enteredCountryCode = resetScenarioState.resetedCountryCode;
       enteredPhone = resetScenarioState.resetedPhone;
     }
@@ -108,18 +105,15 @@ class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
             .updateVerificationCode(resultData['data']['reset_password_token']);
 
         //reset the form or make it empty again
+        enteredPhoneState.updateCountryCode("+20");
+        enteredPhoneState.updateEnteredPhone("");
+        fillingState.updateBoolFilledPhone(false);
+        enteredPhoneState.updateBoolSending(false);
         setState(() {
-          enteredPhoneState.updateCountryCode("+20");
-          enteredPhoneState.updateEnteredPhone("");
-
-          fillingState.updateBoolFilledPhone(false);
-          enteredPhoneState.updateBoolSending(false);
-          isSending = false;
-          isFilling = false;
           _formKey.currentState!.reset();
         });
 
-        if (!isResendCode) {
+        if (!resetScenarioState.isResendCode) {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => VerificationCodeScreen(
                     resendCode: _submit,
@@ -142,10 +136,7 @@ class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
 
         // ya Asmaa please don't reset the form here again
         //because the user may try again and complete his entered data withe the current form state
-        setState(() {
-          enteredPhoneState.updateBoolSending(false);
-          isSending = false;
-        });
+        enteredPhoneState.updateBoolSending(false);
       } else {
         // ignore: use_build_context_synchronously
         if (!context.mounted) {
@@ -161,10 +152,8 @@ class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
         debugPrint('failed');
         debugPrint(response.statusCode.toString());
         debugPrint(response.body.toString());
-        setState(() {
-          enteredPhoneState.updateBoolSending(false);
-          isSending = false;
-        });
+
+        enteredPhoneState.updateBoolSending(false);
       }
     } catch (error) {
       debugPrint(error.toString());
@@ -174,19 +163,12 @@ class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
           content: Text('Authentication failed.$error'),
         ),
       );
-      setState(() {
-        enteredPhoneState.updateBoolSending(false);
-        isSending = false;
-      });
+      enteredPhoneState.updateBoolSending(false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    var isFilling = context.watch<FillingState>().isfilledPhone;
-    var enteredPhoneState = context.read<EnteredPhoneState>();
-    isSending = context.read<EnteredPhoneState>().isSending;
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -207,8 +189,8 @@ class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
               width: kScreenWidth * .8,
               child: Stack(
                 children: [
-                  const BeginigInterfaceWidget(
-                      image: 'Group.png', pageTitle: "Forget password"),
+                  const PageBeginingInterfaceWidget(
+                      image: 'group.png', pageTitle: "Forget password"),
                   Positioned(
                     top: kScreenHeight * 0.215,
                     left: kScreenWidth * 0.04,
@@ -239,24 +221,37 @@ class _ForgetPasswardScreenState extends State<ForgetPasswardScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Form(
                     key: _formKey,
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      const PhoneForm(
-                        hint: "EX : 0124145891",
-                      ),
-                      const SizedBox(height: 38),
-                      if (isSending)
-                        const SizedBox(
-                            height: 5, child: CircularProgressIndicator()),
-                      if (!isSending)
-                        FlatButton(
-                          condition: isFilling,
-                          onPressedFunction: () {
-                            _onPressNext(context, enteredPhoneState);
-                          },
-                          activatedData: 'Next',
-                          deactivedData: 'Next',
-                        ),
-                    ]),
+                    child: Selector<EnteredPhoneState, bool>(
+                        selector: (_, provider) => provider.isSending,
+                        builder: (context, isSending, child) {
+                          return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const PhoneForm(
+                                  hint: "EX : 0124145891",
+                                ),
+                                const SizedBox(height: 38),
+                                if (isSending)
+                                  const SizedBox(
+                                      height: 5,
+                                      child: CircularProgressIndicator()),
+                                if (!isSending)
+                                  Selector<FillingState, bool>(
+                                      selector: (_, provider) =>
+                                          provider.isfilledPhone,
+                                      builder: (context, isFilledPhone, child) {
+                                        return FlatButton(
+                                          condition: isFilledPhone,
+                                          onPressedFunction: () {
+                                            _onPressNext(
+                                                context, enteredPhoneState);
+                                          },
+                                          activatedData: 'Next',
+                                          deactivedData: 'Next',
+                                        );
+                                      }),
+                              ]);
+                        }),
                   ),
                 ),
               ),

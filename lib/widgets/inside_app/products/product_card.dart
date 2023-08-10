@@ -2,15 +2,15 @@ import 'package:asmaa_demo_cadeau/constants/colors.dart';
 import 'package:asmaa_demo_cadeau/constants/screen_dimensions.dart';
 import 'package:asmaa_demo_cadeau/functions/remove_zero_trailings.dart';
 import 'package:asmaa_demo_cadeau/functions/APIs/show_one_product_api.dart';
-import 'package:asmaa_demo_cadeau/screens/inside_app_screens/product_scr.dart';
+import 'package:asmaa_demo_cadeau/screens/inside_app_screens/one_product_screen.dart';
 import 'package:asmaa_demo_cadeau/widgets/customized_text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 import 'package:transparent_image/transparent_image.dart';
 
-class SingleProductCard extends StatelessWidget {
-  const SingleProductCard({
+class ProductCard extends StatelessWidget {
+  const ProductCard({
     super.key,
     required this.productItem,
   });

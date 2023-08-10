@@ -4,9 +4,9 @@ import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 import 'package:asmaa_demo_cadeau/functions/get_device_info.dart';
-import 'package:asmaa_demo_cadeau/provider/single_product_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/product_screen_provider.dart';
 import 'package:asmaa_demo_cadeau/constants/global_api_variables.dart';
-import 'package:asmaa_demo_cadeau/provider/login_token.dart';
+import 'package:asmaa_demo_cadeau/provider/login_provider.dart';
 
 Map productItem = {};
 

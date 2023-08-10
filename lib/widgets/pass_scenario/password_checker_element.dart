@@ -2,8 +2,8 @@ import 'package:asmaa_demo_cadeau/constants/colors.dart';
 import 'package:asmaa_demo_cadeau/widgets/customized_text_widget.dart';
 import 'package:flutter/material.dart';
 
-class PassValidatorElement extends StatelessWidget {
-  const PassValidatorElement(
+class PasswordCheckerElement extends StatelessWidget {
+  const PasswordCheckerElement(
       {super.key, required this.checked, required this.validator});
   final bool checked;
   final String validator;

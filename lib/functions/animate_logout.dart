@@ -1,5 +1,5 @@
+import 'package:asmaa_demo_cadeau/screens/login.dart';
 import 'package:asmaa_demo_cadeau/screens/presist_tab_view.dart';
-import 'package:asmaa_demo_cadeau/screens/splash.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
@@ -10,7 +10,7 @@ void animateLogout(BuildContext context) {
     PageRouteBuilder(
       pageBuilder: (BuildContext context, Animation animation,
           Animation secondaryAnimation) {
-        return const SplashScreen();
+        return const LogInScreen();
       },
       transitionsBuilder: (BuildContext context, Animation<double> animation,
           Animation<double> secondaryAnimation, Widget child) {

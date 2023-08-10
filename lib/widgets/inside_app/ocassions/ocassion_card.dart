@@ -1,14 +1,14 @@
 import 'package:asmaa_demo_cadeau/constants/colors.dart';
 import 'package:asmaa_demo_cadeau/constants/screen_dimensions.dart';
-import 'package:asmaa_demo_cadeau/screens/inside_app_screens/single_ocassion_products_scr.dart';
+import 'package:asmaa_demo_cadeau/screens/inside_app_screens/single_ocassion_productslist_screen.dart';
 import 'package:asmaa_demo_cadeau/widgets/customized_text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 import 'package:transparent_image/transparent_image.dart';
 
-class SingleOcassionCard extends StatelessWidget {
-  const SingleOcassionCard({
+class OcassionCard extends StatelessWidget {
+  const OcassionCard({
     super.key,
     required this.item,
   });

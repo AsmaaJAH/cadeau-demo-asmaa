@@ -1,7 +1,7 @@
 import 'package:asmaa_demo_cadeau/constants/colors.dart';
 import 'package:asmaa_demo_cadeau/constants/screen_dimensions.dart';
 import 'package:asmaa_demo_cadeau/provider/fill_provider.dart';
-import 'package:asmaa_demo_cadeau/provider/phone_provider.dart';
+import 'package:asmaa_demo_cadeau/provider/phone_form_provider.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,16 +30,23 @@ String? _onValidate(String? value) {
 }
 
 class _PhoneFormState extends State<PhoneForm> {
+  late EnteredPhoneState phoneState;
+
+  @override
+  void initState() {
+    super.initState();
+    phoneState = context.read<EnteredPhoneState>();
+  }
+
   void onChange(String value) {
-    var fillingState = context.read<FillingState>();
+    FillingState fillingState = context.read<FillingState>();
+
     if (value.trim().isNotEmpty) {
-      setState(() {
-        fillingState.updateBoolFilledPhone(true);
-      });
+      fillingState.updateBoolFilledPhone(true);
+      fillingState.updateBoolisFillingLogIn();
     } else {
-      setState(() {
-        fillingState.updateBoolFilledPhone(false);
-      });
+      fillingState.updateBoolFilledPhone(false);
+      fillingState.updateBoolisFillingLogIn();
     }
   }
 
@@ -65,9 +72,7 @@ class _PhoneFormState extends State<PhoneForm> {
                   label: Text("Add your country code"),
                 ),
                 onChanged: (countryCode) {
-                  context
-                      .read<EnteredPhoneState>()
-                      .updateCountryCode(countryCode.toString());
+                  phoneState.updateCountryCode(countryCode.toString());
                 },
                 initialSelection: 'EG',
                 favorite: const ['+20', 'EG'],
@@ -93,7 +98,7 @@ class _PhoneFormState extends State<PhoneForm> {
                   onChange(value);
                 },
                 onSaved: (value) {
-                  context.read<EnteredPhoneState>().updateEnteredPhone(value!);
+                  phoneState.updateEnteredPhone(value!);
                 },
               ),
             ),
