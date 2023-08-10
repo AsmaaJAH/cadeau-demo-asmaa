@@ -5,10 +5,7 @@ A new Flutter project.
 
 •	----------------------------- Asmaa’s Demo Project ------------------------------------------
 
-<<<<<<< HEAD
-=======
 
->>>>>>> e0625a5a0d654df6c121c8edca037a86e4dbed79
 •	1- Task one: Login: (with new updates in dividing and organizing the log-in dart file ):
 
 •	=========
